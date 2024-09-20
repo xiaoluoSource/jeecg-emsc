@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: emsc-system
+  profiles:
+    active: '@profile.name@'

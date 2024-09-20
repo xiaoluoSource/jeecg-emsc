@@ -1,0 +1,91 @@
+version: '2'
+services:
+#  jeecg-boot-rabbitmq:
+#    image: rabbitmq:3.7.7-management
+#    ports:
+#      - 5672:5672
+#      - 15672:15672
+#    restart: always
+#    container_name: jeecg-boot-rabbitmq
+#    hostname: jeecg-boot-rabbitmq
+#    environment:
+#      RABBITMQ_DEFAULT_USER: guest
+#      RABBITMQ_DEFAULT_PASS: guest
+
+
+  emsc-boot-nacos:
+    restart: always
+    build:
+      context: ./emsc-cloud-nacos
+    ports:
+      - 8848:8848
+    container_name: emsc-boot-nacos
+    hostname: emsc-boot-nacos
+    networks:
+      - emsc-boot
+
+  emsc-boot-system:
+    depends_on:
+      - emsc-boot-nacos
+    build:
+      context: ./emsc-system-cloud-start
+    container_name: emsc-system-start
+    hostname: emsc-boot-system
+    restart: on-failure
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - emsc-boot
+
+  emsc-boot-web:
+    depends_on:
+      - emsc-boot-nacos
+    build:
+      context: ./emsc-demo-cloud-start
+    container_name: emsc-demo-start
+    hostname: emsc-boot-web
+    restart: on-failure
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - emsc-boot
+
+  emsc-boot-gateway:
+    restart: on-failure
+    build:
+      context: ./emsc-cloud-gateway
+    ports:
+      - 9999:9999
+    depends_on:
+      - emsc-boot-nacos
+      - emsc-boot-system
+    container_name: emsc-boot-gateway
+    hostname: emsc-boot-gateway
+    networks:
+      - emsc-boot
+
+networks:
+  emsc-boot:
+    name: emsc-boot
+
+#  jeecg-boot-sentinel:
+#    restart: on-failure
+#    build:
+#      context: ./jeecg-visual/jeecg-cloud-sentinel
+#    ports:
+#      - 9000:9000
+#    depends_on:
+#      - jeecg-boot-nacos
+#      - jeecg-boot-demo
+#      - jeecg-boot-system
+#      - jeecg-boot-gateway
+#    container_name: jeecg-boot-sentinel
+#    hostname: jeecg-boot-sentinel
+#
+#  jeecg-boot-xxljob:
+#    build:
+#      context: ./jeecg-visual/jeecg-cloud-xxljob
+#    ports:
+#      - 9080:9080
+#    container_name: jeecg-boot-xxljob
+#    hostname: jeecg-boot-xxljob
